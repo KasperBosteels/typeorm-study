@@ -1,0 +1,75 @@
+{
+  "table": "temporary_data",
+  "rows": [
+    {
+      "dataid": 57150,
+      "day": 741,
+      "night": 722,
+      "created_at": "2022-10-30 20:46:57.783780",
+      "deviceDeviceIndex": 115
+    },
+    {
+      "dataid": 57149,
+      "day": 642,
+      "night": 715,
+      "created_at": "2022-10-30 20:46:57.780781",
+      "deviceDeviceIndex": 115
+    },
+    {
+      "dataid": 57148,
+      "day": 567,
+      "night": 641,
+      "created_at": "2022-10-30 20:46:57.778925",
+      "deviceDeviceIndex": 115
+    },
+    {
+      "dataid": 57147,
+      "day": 499,
+      "night": 590,
+      "created_at": "2022-10-30 20:46:57.775302",
+      "deviceDeviceIndex": 115
+    },
+    {
+      "dataid": 57146,
+      "day": 426,
+      "night": 544,
+      "created_at": "2022-10-30 20:46:57.772934",
+      "deviceDeviceIndex": 115
+    },
+    {
+      "dataid": 57145,
+      "day": 380,
+      "night": 458,
+      "created_at": "2022-10-30 20:46:57.770083",
+      "deviceDeviceIndex": 115
+    },
+    {
+      "dataid": 57144,
+      "day": 292,
+      "night": 391,
+      "created_at": "2022-10-30 20:46:57.766625",
+      "deviceDeviceIndex": 115
+    },
+    {
+      "dataid": 57143,
+      "day": 262,
+      "night": 296,
+      "created_at": "2022-10-30 20:46:57.764120",
+      "deviceDeviceIndex": 115
+    },
+    {
+      "dataid": 57142,
+      "day": 180,
+      "night": 220,
+      "created_at": "2022-10-30 20:46:57.759588",
+      "deviceDeviceIndex": 115
+    },
+    {
+      "dataid": 57141,
+      "day": 164,
+      "night": 145,
+      "created_at": "2022-10-30 20:46:57.757013",
+      "deviceDeviceIndex": 115
+    }
+  ]
+}
