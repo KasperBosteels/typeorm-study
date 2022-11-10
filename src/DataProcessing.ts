@@ -306,7 +306,7 @@ export class DataProcessor {
       let dataFromSpecificDevice = await this.getAllTempData(
         specificDevice.device_index
       );
-      if (dataFromSpecificDevice.length === 0) {
+      if (dataFromSpecificDevice.length > 0) {
         dataFromSpecificDevice = dataFromSpecificDevice.sort((a, b) =>
           a.created_at > b.created_at ? 1 : -1
         );
