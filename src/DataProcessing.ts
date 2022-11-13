@@ -5,14 +5,10 @@ import { Device } from "./entity/Device";
 import { AppDataSource } from "./data-source";
 import { TemporaryData } from "./entity/TemporaryData";
 import { Password_Reset } from "./entity/Password_Reset";
-import { Equal, LessThan, MoreThan, MoreThanOrEqual } from "typeorm";
+import { Equal, LessThan } from "typeorm";
 import { ContactForm } from "./entity/contact";
 import { validate } from "class-validator";
-interface dailyTotalData {
-  deviceId: string;
-  day: number;
-  night: number;
-}
+import { weeklyData } from "./entity/weekly_data";
 interface DeviceSpecificData {
   deviceindex: number;
   deviceAlias: string;
@@ -78,12 +74,19 @@ export class DataProcessor {
     let user = await Users.findOneBy({ userId: userid });
     Administrator.insert({ user });
   }
-  public async CreateTempData(deviceId: string, day: number, night: number) {
+  public async CreateTempData(
+    deviceId: string,
+    day: number,
+    night: number,
+    date?: Date
+  ) {
     let device = await Device.findOneBy({ deviceId: deviceId });
     const newData = new TemporaryData();
     newData.day = day;
     newData.night = night;
     newData.device = device;
+    //for debugging i added date
+    if (date) newData.created_at = date;
     const errors = await validate(newData);
     if (errors.length > 0) {
       throw new Error("validation for Temporary Data failed");
@@ -302,36 +305,41 @@ export class DataProcessor {
   public async CleanTemporaryData() {
     await this.DeleteExpiredData();
     let allDevices: Device[] = await Device.find();
-    allDevices.map(async (specificDevice) => {
-      let dataFromSpecificDevice = await this.getAllTempData(
-        specificDevice.device_index
-      );
-      if (dataFromSpecificDevice.length > 0) {
-        dataFromSpecificDevice = dataFromSpecificDevice.sort((a, b) =>
-          a.created_at > b.created_at ? 1 : -1
+    allDevices.map(async (specificDevice,index) => {
+      setTimeout(async ()=>{
+        let dataFromSpecificDevice = await this.getAllTempData(
+         specificDevice.device_index
         );
-        if (dataFromSpecificDevice.length > 1) {
-          let allDayData: number[] = [];
-          let allNightData: number[] = [];
-          dataFromSpecificDevice.map((d) => {
-            allDayData.push(d.day);
-            allNightData.push(d.night);
-          });
-          const totalDayUsage: number = allDayData.at(-1) - allDayData.at(0);
-          const totalNightUsage: number =
-            allNightData.at(-1) - allNightData.at(0);
-          await this.CreateData(
-            specificDevice.deviceId,
-            totalDayUsage,
-            totalNightUsage
+        if (dataFromSpecificDevice.length > 0) {
+         dataFromSpecificDevice = dataFromSpecificDevice.sort((a, b) =>
+            a.created_at < b.created_at ? 1 : -1
           );
-        }
-        dataFromSpecificDevice.shift();
-        dataFromSpecificDevice.map(
-          async (data) => await this.DeleteSpecificTempData(data.index)
-        );
+         if (dataFromSpecificDevice.length > 1) {
+           let allDayData: number[] = [];
+           let allNightData: number[] = [];
+           dataFromSpecificDevice.map((d) => {
+             allDayData.push(d.day);
+             allNightData.push(d.night);
+           });
+           const totalDayUsage: number = allDayData.at(-1) - allDayData.at(0);
+           const totalNightUsage: number =
+             allNightData.at(-1) - allNightData.at(0);
+           await this.CreateData(
+             specificDevice.deviceId,
+              totalDayUsage,
+              totalNightUsage
+            );
+         }
+         dataFromSpecificDevice.shift();
+         dataFromSpecificDevice.map(
+           async (data) => await this.DeleteSpecificTempData(data.index)
+         );
+        
       }
+      console.log("cleaned all temp data from ",specificDevice.deviceId)
+      },1_000 * (index+1));
     });
+  
   }
   private async getAllTempData(index: number): Promise<TemporaryData[]> {
     let alldata: TemporaryData[] = await AppDataSource.getRepository(
@@ -345,10 +353,19 @@ export class DataProcessor {
   }
 
   public async DeleteExpiredPasswordReset() {
-    const expiringDate: Date = new Date(new Date().getTime() - 2 * 60 * 1000);
+    const expiringDate: Date = new Date(new Date().getTime() - 24 * 60 * 60 * 1000);
     await AppDataSource.getRepository(Password_Reset).delete({
       created_at: LessThan(expiringDate),
     });
+  }
+
+  private async weeklyData(tempData:TemporaryData[],startWeek:Date,endWeek:Date){
+  const filteredData:TemporaryData[] = tempData.filter((a)=>a.created_at>=startWeek && a.created_at < endWeek).sort((a,b)=>a.created_at<b.created_at?1:-1)
+  if(filteredData.length<=1){
+    return;
+  }else if(filteredData.length>1){
+
+  }
   }
 
   private async DeleteExpiredData() {

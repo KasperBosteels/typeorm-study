@@ -8,6 +8,7 @@ import { Translations } from "./entity/translations";
 import { ContactForm } from "./entity/contact";
 import { TemporaryData } from "./entity/TemporaryData";
 import { Password_Reset } from "./entity/Password_Reset";
+import {weeklyData} from './entity/weekly_data'
 export const AppDataSource = new DataSource({
   type: "mysql",
   host: "192.168.1.46",
@@ -26,6 +27,7 @@ export const AppDataSource = new DataSource({
     TemporaryData,
     ContactForm,
     Password_Reset,
+    weeklyData
   ],
   migrations: [],
   subscribers: [],

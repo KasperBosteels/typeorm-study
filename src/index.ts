@@ -3,6 +3,7 @@ import { Users } from "./entity/User";
 import { DataProcessor } from "./DataProcessing";
 import { Crypt } from "./crypt";
 import { Device } from "./entity/Device";
+
 const dataBase = new DataProcessor();
 let randomgen = (max: number = 100, min: number = 0) =>
   Math.round(Math.random() * (max - min)) + min;
@@ -32,8 +33,8 @@ AppDataSource.initialize()
     console.log("creating new device:");
     await dataBase.CreateDevice(deviceId);
 
-    //console.log("creating new random data...");
-    //await createRandomData();
+    console.log("creating new random data...");
+    await createRandomData();
 
     await dataBase.CreateContactForm(
       useremail,
@@ -52,26 +53,23 @@ AppDataSource.initialize()
   .then(async () => {
     await dataBase.ChangePassword(newlymadeUser.userId, "changedPassword");
     await dataBase.CreateAdministrator(newlymadeUser.userId);
-    await dataBase.coupleUserToDevice(newlymadeUser.userId, deviceId);
+    await dataBase.coupleUserToDevice(
+      43,
+      "BABDCAZERFSQSFJKIOLMODEKFJSLPODPOEkldslerfre9.983175860174619e+2"
+    );
     console.log("cleaning temp data...");
     await dataBase.CleanTemporaryData();
-    logresults(
-      "USER OBJECT",
-      await dataBase.GetUser(newlymadeUser.userId, undefined)
-    );
+    logresults("USER OBJECT", await dataBase.GetUser(43, undefined));
     logresults(
       "ADMINISTRATOR OBJECT",
       await dataBase.GetAdministrator(newlymadeUser.userId)
     );
     logresults("FORM", await dataBase.GetContactForm(undefined, useremail));
-    logresults(
-      "DEVICE OBJECT",
-      await dataBase.GetDevices(newlymadeUser.userId)
-    );
+    logresults("DEVICE OBJECT", await dataBase.GetDevices(43));
     const endDate = new Date();
     const startDate = new Date(2022, 10, 7, 0, 0, 30, 0);
     await dataBase.DeleteExpiredPasswordReset();
-    logresults("DATA OBJECT", await dataBase.GetData(9, endDate, startDate));
+    logresults("DATA OBJECT", await dataBase.GetData(43));
   });
 
 function logresults(label: string, input: any) {
@@ -82,13 +80,18 @@ function logresults(label: string, input: any) {
 }
 async function createRandomData() {
   let alldevices: Device[] = await Device.find();
+  let currentDate = new Date()
   alldevices.forEach((device) => {
+          
     for (let i = 0; i < 500; i++) {
       dataBase.CreateTempData(
         device.deviceId,
         randomgen(100 + i, 90 + i),
-        randomgen(100 + i, 90 + i)
+        randomgen(100 + i, 90 + i),
+        new Date(2022,10,13,currentDate.getHours(),currentDate.getMinutes()-i)
       );
+
     }
+
   });
 }
