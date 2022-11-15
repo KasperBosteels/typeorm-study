@@ -17,6 +17,12 @@ interface DeviceSpecificData {
 }
 export class DataProcessor {
   //#region Create Data
+ 
+ /**
+  * creates a device in the database
+  * @param DeviceId string id of device(64 char)
+  * @param alias string | undefined alias of device
+  */
   public async CreateDevice(DeviceId: string, alias?: string) {
     const newDevice = new Device();
     newDevice.deviceId = DeviceId;
@@ -26,6 +32,16 @@ export class DataProcessor {
       await Device.save(newDevice);
     }
   }
+
+  /**
+   * creates a user in the database
+   * @param firstname string
+   * @param lastname string
+   * @param email string valid email adress
+   * @param password string min 5 char
+   * @param phoneNUmber string valid belgian number
+   * @returns promise voide
+   */
   public async CreateUser(
     firstname: string,
     lastname: string,
@@ -49,6 +65,14 @@ export class DataProcessor {
       return (await Users.save(newUser)).userId;
     }
   }
+
+  /**
+   * creates Data in database
+   * @param deviceid string device id (64 char)
+   * @param dataDay number | undefined
+   * @param DataNight number | undefined
+   * @param date Date | undefined
+   */
   public async CreateData(
     deviceid: string,
     dataDay?: number,
@@ -70,10 +94,23 @@ export class DataProcessor {
       }
     });
   }
+
+  /**
+   * creates a new admin connected to a user.
+   * @param userid user id number
+   */
   public async CreateAdministrator(userid: number): Promise<void> {
     let user = await Users.findOneBy({ userId: userid });
     Administrator.insert({ user });
   }
+
+  /**
+   * creates new TemporaryData in database
+   * @param deviceId string device id (64 char)
+   * @param day number | undefined
+   * @param night number | undefined
+   * @param date Date | undefined
+   */
   public async CreateTempData(
     deviceId: string,
     day: number,
@@ -94,6 +131,13 @@ export class DataProcessor {
       TemporaryData.save(newData);
     }
   }
+
+  /**
+   * creates a new ContactForm in database
+   * @param email string valid email adress
+   * @param message string 
+   * @param message_topic string 
+   */
   public async CreateContactForm(
     email: string,
     message: string,
@@ -112,6 +156,13 @@ export class DataProcessor {
     }
   }
 
+  /**
+   * creates a password reset entry in database
+   * @param token strong supposed to be a unique token that the user has
+   * @param userId number user index
+   * @param email string valid email adress
+   * @param phone string valid belgian phone number
+   */
   public async CreatePasswordReset(
     token: string,
     userId?: number,
@@ -130,6 +181,12 @@ export class DataProcessor {
   //#endregion
 
   //#region Get Data
+
+  /**
+   * returns administrator object if it exists
+   * @param userId number user index
+   * @returns Promise<Administrator>
+   */
   public async GetAdministrator(userId: number): Promise<Administrator> {
     let AdminQuery = AppDataSource.getRepository(Administrator)
       .createQueryBuilder("administrator")
@@ -138,7 +195,13 @@ export class DataProcessor {
       .getOne();
     return await AdminQuery;
   }
-
+  /**
+   * returns DeviceSpecificData[] of a specific user within given dates if any
+   * @param userId number user index
+   * @param endDate Date | undefined
+   * @param startDate  Date | undefined
+   * @returns Promise<DeviceSpecificData[]>
+   */
   public async GetData(
     userId: number,
     endDate?: Date,
@@ -197,6 +260,11 @@ export class DataProcessor {
 
     return CompleteData;
   }
+  /**
+   * gets temp data from all devices of a specific user
+   * @param userid user index
+   * @returns Promise<TemporaryData[]>
+   */
   public async GetTempData(userid: number): Promise<TemporaryData[]> {
     let alldata = await AppDataSource.getRepository(TemporaryData)
       .createQueryBuilder("temporary_data")
@@ -205,7 +273,13 @@ export class DataProcessor {
       .getMany();
     return alldata;
   }
-
+  /**
+   * return a User if any found
+   * @param userid number user index
+   * @param email string valid email adress
+   * @param number string valid belgian phone number
+   * @returns Promise<User>
+   */
   public async GetUser(
     userid?: number,
     email?: string,
@@ -217,6 +291,11 @@ export class DataProcessor {
       await Users.findOne({ where: { phone: Equal(number) } }),
     ]);
   }
+  /**
+   * finds first not undefined value in an array of objects
+   * @param objects any[] array of objects it needs to filter
+   * @returns any
+   */
   private firstNonUndefined(objects: any[]): any {
     return objects.find((object) => object !== undefined && object !== null);
   }
@@ -229,6 +308,12 @@ export class DataProcessor {
     return devices;
   }
 
+  /**
+   * gets last TemporaryData id of a specific device
+   * @param device_index number device index
+   * @param dataid 
+   * @returns Promise<TemporaryData>
+   */
   public async GetLastData(
     device_index: number,
     dataid: number
@@ -244,7 +329,11 @@ export class DataProcessor {
     latestData.dataId = dataid + 1;
     return latestData;
   }
-
+  /**
+   * checks if the token is still valid, in both cases it will delete the token.
+   * @param token string unique token
+   * @returns Promise<boolean>
+   */
   public async GetPasswordReset(token: string): Promise<boolean> {
     let resettoken: Password_Reset = await Password_Reset.findOneBy({
       Token: token,
@@ -254,6 +343,12 @@ export class DataProcessor {
     this.DeleteSpecificPasswordReset(token);
     return passwordResetAllowed;
   }
+  /**
+   * searches in contactform table for forms with or without filtering on topic or email adress.
+   * @param message_topic string | undefinde topic of the form
+   * @param email string | undefined email adress of the form submitter
+   * @returns Promise<ContactForm[]>
+   */
   public async GetContactForm(
     message_topic?: string,
     email?: string
@@ -267,7 +362,11 @@ export class DataProcessor {
   //#endregion
 
   //#region Edit Data
-
+  /**
+   * changes the password of a user
+   * @param userId number user index
+   * @param newPassword string (min 5 char)
+   */
   public async ChangePassword(
     userId: number,
     newPassword: string
@@ -277,12 +376,20 @@ export class DataProcessor {
     User.save();
     //Users.update(userId, { password: newPassword });
   }
-
+  /**
+   * makes a relation with a specific user to a device
+   * @param userid 	number user index
+   * @param deviceid string device id (64 char)
+   */
   public async coupleUserToDevice(userid: number, deviceid: string) {
     let user = await Users.findOneBy({ userId: userid });
     await Device.update({ deviceId: deviceid }, { user: user });
   }
-
+  /**
+   * adds a custom name to the device 
+   * @param deviceIndex number device index
+   * @param alias string extra name for the device (min 1 char)
+   */
   public async EditDeviceAlias(deviceIndex: number, alias: string) {
     Device.update({ device_index: deviceIndex }, { friendlyName: alias });
   }
@@ -290,18 +397,35 @@ export class DataProcessor {
   //#endregion
 
   //#region Delete Data
+
+  /**
+   * removes an admin from the database
+   * @param adminId admin index
+   */
   public async DeleteAdministrator(adminId?: number): Promise<void> {
     Administrator.delete({ adminId: adminId });
   }
+  /**
+   * deletes a user from the database
+   * @param userid number user index
+   */
   public async DeleteUser(userid: number) {
     Users.delete({ userId: userid });
   }
+  /**
+   * removes a device from the database
+   * @param device_index device index
+   */
   public async DeleteDevice(device_index: number) {
     let device = await Device.findOneBy({ device_index: device_index });
     console.log(device.data);
   }
   //#endregion
-
+  /**
+   * ° removes data older than 24 hours.
+   * ° creates data by subtracting the last off the first temp data for each device.
+   * ° removes all temporaryData used in creating new data except for the last entry 
+   */
   public async CleanTemporaryData() {
     await this.DeleteExpiredData();
     let allDevices: Device[] = await Device.find();
@@ -341,6 +465,11 @@ export class DataProcessor {
     });
   
   }
+  /**
+   * returns all TemporaryData from the database
+   * @param index number
+   * @returns Promise<TemporaryData[]>
+   */
   private async getAllTempData(index: number): Promise<TemporaryData[]> {
     let alldata: TemporaryData[] = await AppDataSource.getRepository(
       TemporaryData
@@ -352,13 +481,22 @@ export class DataProcessor {
     return alldata;
   }
 
+  /**
+   * deletes any password reset tokens older than 30 minutes
+   */
   public async DeleteExpiredPasswordReset() {
-    const expiringDate: Date = new Date(new Date().getTime() - 24 * 60 * 60 * 1000);
+    const expiringDate: Date = new Date(new Date().getTime() - 30 * 60 * 1000);
     await AppDataSource.getRepository(Password_Reset).delete({
       created_at: LessThan(expiringDate),
     });
   }
 
+  /**
+   * looks for any data between two dates
+   * @param tempData TemporaryData[]
+   * @param startWeek Date
+   * @param endWeek Date
+   */
   private async weeklyData(tempData:TemporaryData[],startWeek:Date,endWeek:Date){
   const filteredData:TemporaryData[] = tempData.filter((a)=>a.created_at>=startWeek && a.created_at < endWeek).sort((a,b)=>a.created_at<b.created_at?1:-1)
   if(filteredData.length<=1){
@@ -367,19 +505,37 @@ export class DataProcessor {
 
   }
   }
-
+  /**
+   * deletes any TemporaryData older than 24 hours
+   */
   private async DeleteExpiredData() {
-    const expiringDate: Date = new Date(new Date().getTime() - 10 * 60 * 1000);
-    await AppDataSource.getRepository(Password_Reset).delete({
+    const expiringDate: Date = new Date(new Date().getTime() - 24 * 60 * 60 * 1000);
+    await AppDataSource.getRepository(TemporaryData).delete({
       created_at: LessThan(expiringDate),
     });
   }
+  /**
+   * deletes a single password reset entry in database
+   * @param token string unique token
+   */
   private async DeleteSpecificPasswordReset(token: string) {
     Password_Reset.delete({ Token: token });
   }
+  /**
+   * deletes a single TemporaryData entry in database
+   * @param index TemporaryData index
+   */
   private async DeleteSpecificTempData(index: number) {
     TemporaryData.delete({ index: index });
   }
+  /**
+   * does not work
+   * validates any typeorm entitiy that needs to be inserted in database.
+   * returns true if validation passed
+   * if validation fails it throws an error
+   * @param object Object
+   * @returns Promise<boolean>
+   */
   private ValidateObject(object: Object): Promise<boolean> {
     return validate(object).then(async (result) => {
       if (result.length > 0) {
