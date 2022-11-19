@@ -1,14 +1,5 @@
 import { IsEmail, IsOptional, IsPhoneNumber, Length } from "class-validator";
-import {
-  Entity,
-  Column,
-  BaseEntity,
-  OneToMany,
-  JoinColumn,
-  PrimaryGeneratedColumn,
-  BeforeUpdate,
-  BeforeInsert,
-} from "typeorm";
+import {Entity,Column,BaseEntity,OneToMany,JoinColumn,PrimaryGeneratedColumn,BeforeUpdate,BeforeInsert,} from "typeorm";
 import { Crypt } from "../crypt";
 import { Device } from "./Device";
 export enum Colors {

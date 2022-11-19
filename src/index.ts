@@ -44,7 +44,7 @@ AppDataSource.initialize()
     console.error(error);
   })
   .then(async () => {
-    await dataBase.EditAccount(newlymadeUser.userId,"Hello","world","Hel"+randomgen(10,-10)+"d@hotmail.com","+32491"+randomgen(3999,3001)+"48",Colors.GREEN,Colors.RED);
+    await dataBase.EditAccount(newlymadeUser.userId,"Hello","world","Hel"+randomgen(999,-999)+"d@hotmail.com","+32491"+randomgen(3999,3001)+"48",Colors.GREEN,Colors.RED);
     await dataBase.CreateAdministrator(newlymadeUser.userId);
     await dataBase.coupleUserToDevice(
       newlymadeUser.userId,
@@ -55,6 +55,7 @@ AppDataSource.initialize()
     await dataBase.ChangePassword(newlymadeUser.userId, "changedPassword");
     console.log("cleaning temp data...");
     await dataBase.CleanTemporaryData();
+    await CreateRAndomDataForFirstDevice();
     logresults("USER OBJECT", userdata);
     if(passwordsMatch){
       console.log("PASSWORDS MATCH")
@@ -67,8 +68,6 @@ AppDataSource.initialize()
     );
     //logresults("FORM", await dataBase.GetContactForm("topic-"));
     logresults("DEVICE OBJECT", await dataBase.GetDevices(newlymadeUser.userId-1));
-    const endDate = new Date();
-    const startDate = new Date(2022, 10, 7, 0, 0, 30, 0);
     await dataBase.DeleteExpiredPasswordReset();
     logresults("DATA OBJECT", await dataBase.GetData(newlymadeUser.userId-1));
   });
@@ -82,17 +81,29 @@ function logresults(label: string, input: any) {
 async function createRandomData() {
   let alldevices: Device[] = await Device.find();
   let currentDate = new Date()
-  alldevices.forEach((device) => {
-          
+  alldevices.forEach(async (device) => {
     for (let i = 0; i < 500; i++) {
-      dataBase.CreateTempData(
+      await dataBase.CreateTempData(
         device.deviceId,
         randomgen(100 + i, 90 + i),
         randomgen(100 + i, 90 + i),
-        new Date(2022,10,13,currentDate.getHours(),currentDate.getMinutes()-i)
+        new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDay(),currentDate.getHours(),currentDate.getMinutes()-i)
       );
     }
-    console.log("created data for device: ",device.device_index)
+    
 
   });
+}
+
+async function CreateRAndomDataForFirstDevice(){
+  let device = await Device.findOneBy({device_index:1})
+  let currentDate = new Date();
+  for (let i = 0; i < 100; i++) {
+    await dataBase.CreateTempData(
+    device.deviceId,
+    randomgen(100 + i, 90 + i),
+    randomgen(100 + i, 90 + i),
+    new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDay(),currentDate.getHours(),currentDate.getMinutes()-(i*15))
+    )
+  }
 }
