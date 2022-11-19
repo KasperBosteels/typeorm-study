@@ -1,5 +1,5 @@
 import { AppDataSource } from "./data-source";
-import { Users } from "./entity/User";
+import { Colors, Users } from "./entity/User";
 import { DataProcessor } from "./DataProcessing";
 import { Crypt } from "./crypt";
 import { Device } from "./entity/Device";
@@ -30,46 +30,47 @@ AppDataSource.initialize()
       userpassword,
       userphone
     );
-    console.log("creating new device:");
     await dataBase.CreateDevice(deviceId);
-
-    console.log("creating new random data...");
     await createRandomData();
-
     await dataBase.CreateContactForm(
       useremail,
-      "this is a long message",
-      "this is a message topic"
+      "message",
+      "topic-"
     );
-
-    //get user
     newlymadeUser = await dataBase.GetUser(undefined, useremail);
-
     await dataBase.CreatePasswordReset(Token, newlymadeUser.userId);
   })
   .catch((error) => {
     console.error(error);
   })
   .then(async () => {
-    await dataBase.ChangePassword(newlymadeUser.userId, "changedPassword");
+    await dataBase.EditAccount(newlymadeUser.userId,"Hello","world","Hel"+randomgen(10,-10)+"d@hotmail.com","+32491"+randomgen(3999,3001)+"48",Colors.GREEN,Colors.RED);
     await dataBase.CreateAdministrator(newlymadeUser.userId);
     await dataBase.coupleUserToDevice(
-      43,
-      "BABDCAZERFSQSFJKIOLMODEKFJSLPODPOEkldslerfre9.983175860174619e+2"
+      newlymadeUser.userId,
+      deviceId
     );
+    let userdata = await dataBase.GetUser(newlymadeUser.userId)
+    let passwordsMatch = await Crypt.matchesEncrypted(userpassword,userdata.password)
+    await dataBase.ChangePassword(newlymadeUser.userId, "changedPassword");
     console.log("cleaning temp data...");
     await dataBase.CleanTemporaryData();
-    logresults("USER OBJECT", await dataBase.GetUser(43, undefined));
+    logresults("USER OBJECT", userdata);
+    if(passwordsMatch){
+      console.log("PASSWORDS MATCH")
+    }else {
+      console.log("PASSWORDS DON'T MATCH")
+    }
     logresults(
       "ADMINISTRATOR OBJECT",
       await dataBase.GetAdministrator(newlymadeUser.userId)
     );
-    logresults("FORM", await dataBase.GetContactForm(undefined, useremail));
-    logresults("DEVICE OBJECT", await dataBase.GetDevices(43));
+    //logresults("FORM", await dataBase.GetContactForm("topic-"));
+    logresults("DEVICE OBJECT", await dataBase.GetDevices(newlymadeUser.userId-1));
     const endDate = new Date();
     const startDate = new Date(2022, 10, 7, 0, 0, 30, 0);
     await dataBase.DeleteExpiredPasswordReset();
-    logresults("DATA OBJECT", await dataBase.GetData(43));
+    logresults("DATA OBJECT", await dataBase.GetData(newlymadeUser.userId-1));
   });
 
 function logresults(label: string, input: any) {
@@ -90,8 +91,8 @@ async function createRandomData() {
         randomgen(100 + i, 90 + i),
         new Date(2022,10,13,currentDate.getHours(),currentDate.getMinutes()-i)
       );
-
     }
+    console.log("created data for device: ",device.device_index)
 
   });
 }

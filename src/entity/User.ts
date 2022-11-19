@@ -1,4 +1,4 @@
-import { IsEmail, IsPhoneNumber, Length } from "class-validator";
+import { IsEmail, IsOptional, IsPhoneNumber, Length } from "class-validator";
 import {
   Entity,
   Column,
@@ -8,10 +8,14 @@ import {
   PrimaryGeneratedColumn,
   BeforeUpdate,
   BeforeInsert,
-  Index,
 } from "typeorm";
 import { Crypt } from "../crypt";
 import { Device } from "./Device";
+export enum Colors {
+  RED="red",
+  GREEN="green",
+  BLUE="blue"
+}
 @Entity()
 export class Users extends BaseEntity {
   @PrimaryGeneratedColumn({ name: "userid" })
@@ -64,6 +68,14 @@ export class Users extends BaseEntity {
   @Column("text", { nullable: false, unique: false, name: "hashedPassword" })
   @Length(5)
   password!: string;
+
+  @Column("enum",{enum:Colors,default:Colors.RED, name:"colorDay",nullable:true})
+  @IsOptional()
+  colorDay:Colors;
+
+  @Column("enum",{enum:Colors,default:Colors.BLUE,name:"colorNight",nullable:true})
+  @IsOptional()
+  colorNight:Colors;
 
   @BeforeInsert()
   @BeforeUpdate()

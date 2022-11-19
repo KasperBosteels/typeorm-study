@@ -1,6 +1,6 @@
 import { Administrator } from "./entity/Administrator";
 import { Data } from "./entity/Data";
-import { Users } from "./entity/User";
+import { Colors, Users } from "./entity/User";
 import { Device } from "./entity/Device";
 import { AppDataSource } from "./data-source";
 import { TemporaryData } from "./entity/TemporaryData";
@@ -392,6 +392,33 @@ export class DataProcessor {
    */
   public async EditDeviceAlias(deviceIndex: number, alias: string) {
     Device.update({ device_index: deviceIndex }, { friendlyName: alias });
+  }
+
+  /**
+   * Edit a single account with the given data
+   * @param userid number index of user
+   * @param firstname string | undefined name
+   * @param lastname string | undefined last name
+   * @param email string | undefined valid email
+   * @param phone string | undefined valid belgian phone number
+   * @param colorDay Colors | undefined enum of colors
+   * @param colorNight Colors | undefined enum of colors
+   */
+  public async EditAccount(userid:number,firstname:string,lastname:string,email:string,phone:string,colorDay:Colors,colorNight:Colors):Promise<void>{
+    let userCountifexist :[Users[],number] = await Users.findAndCountBy({userId:userid});
+    if(userCountifexist[1] <1){
+
+    }else{
+      await Users.update({userId:userid},{
+        firstname:firstname,
+        lastname:lastname,
+        email:email,
+        phone:phone,
+        colorDay:colorDay,
+        colorNight:colorNight
+      });
+    }
+
   }
 
   //#endregion
