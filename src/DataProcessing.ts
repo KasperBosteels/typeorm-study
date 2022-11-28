@@ -498,9 +498,10 @@ export class DataProcessor {
    * @returns Promise<TemporaryData[]>
    */
   private async getAllTempData(index: number): Promise<TemporaryData[]> {
-    let alldata: TemporaryData[] = await AppDataSource.getRepository(
-      TemporaryData
-    )
+    /*
+    alternate way of doing this.
+    */
+    let alldata: TemporaryData[] = await TemporaryData
       .createQueryBuilder("temporary_data")
       .select()
       .where("deviceDeviceIndex = :deviceIndex", { deviceIndex: index })
